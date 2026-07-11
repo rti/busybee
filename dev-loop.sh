@@ -294,5 +294,8 @@ issue_data="$(pick_issue)" || {
 }
 
 IFS='|' read -r issue_num issue_title issue_body <<< "$issue_data"
-implement_issue "$issue_num" "$issue_title" "$issue_body"
+if implement_issue "$issue_num" "$issue_title" "$issue_body"; then
+    exit 0
+fi
+echo "Failed to implement issue #${issue_num}"
 exit 0
