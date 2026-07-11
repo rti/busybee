@@ -66,10 +66,17 @@ post_questions() {
 # --- Step 1: Review open PRs for pending feedback ---------------------------
 
 review_prs() {
+    echo "[debug] Step 1: reviewing open PRs for pending feedback"
+
     local pr_list
     pr_list="$(gh pr list --repo "$REPO" --state open --json number,updatedAt,title,headRefName --jq '.[] | "\(.number)|\(.updatedAt)|\(.title)|\(.headRefName)"')" || return 1
 
-    [ -z "$pr_list" ] && return 1
+    [ -z "$pr_list" ] && { echo "[debug] No open PRs found"; return 1; }
+
+    echo "[debug] Open PRs fetched:"
+    echo "$pr_list" | while IFS='|' read -r n u t b; do
+        echo "[debug]   PR #$n: \"$t\" (branch: $b, updated: $u)"
+    done
 
     # Sort by most recently updated (descending).
     local pr_sorted
@@ -78,14 +85,18 @@ review_prs() {
     while IFS='|' read -r pr_num updated_at pr_title branch_name; do
         [ -z "$pr_num" ] && continue
 
+        echo "[debug] Checking PR #${pr_num} (branch: ${branch_name}) for feedback..."
+
         # Fetch review comments that arrived after the bot's last push on this branch.
         local last_push_date
         last_push_date="$(git log --format=%aI -1 "origin/${branch_name}" 2>/dev/null)" || last_push_date=""
 
         local comments=""
         if [ -n "$last_push_date" ]; then
+            echo "[debug]   Last bot push on branch: ${last_push_date}; fetching comments after that date"
             comments="$(gh pr view "$pr_num" --repo "$REPO" --json comments --jq --arg date "$last_push_date" '.comments[] | select(.updatedAt > $date) | "\(.body)\n---\n"' 2>/dev/null)" || comments=""
         else
+            echo "[debug]   No prior bot push on branch; fetching all comments"
             comments="$(gh pr view "$pr_num" --repo "$REPO" --json comments --jq '.comments[].body' 2>/dev/null)" || comments=""
         fi
 
@@ -98,6 +109,7 @@ review_prs() {
         feedback="$(printf '%s' "$feedback" | sed '/^$/d')"
 
         if [ -n "$feedback" ]; then
+            echo "[debug]   Found feedback on PR #${pr_num} — processing"
             echo "Addressing feedback on PR #${pr_num}..."
 
             git fetch origin
@@ -124,6 +136,7 @@ If anything is ambiguous, print your questions to stdout prefixed with \`QUESTIO
             local questions
             questions="$(echo "$result" | grep '^QUESTION:' || true)"
             if [ -n "$questions" ]; then
+                echo "[debug]   Opencode asked for clarification on PR #${pr_num}"
                 echo "Asking for clarification on PR #${pr_num}..."
                 post_questions "pr" "$pr_num" "I need clarification before proceeding:\n\n${questions}"
                 git checkout "$DEFAULT_BRANCH" 2>/dev/null || true
@@ -135,35 +148,47 @@ If anything is ambiguous, print your questions to stdout prefixed with \`QUESTIO
             new_commits="$(git log --oneline "origin/${branch_name}"..HEAD)" || new_commits=""
 
             if [ -z "$new_commits" ]; then
+                echo "[debug]   Opencode did not commit; checking for uncommitted changes on PR #${pr_num}"
                 # No commits — check for uncommitted changes as fallback.
                 if [ -z "$(git status --porcelain)" ]; then
+                    echo "[debug]   No file changes from opencode for PR #${pr_num}"
                     echo "No file changes from opencode; nothing to commit."
                     git checkout "$DEFAULT_BRANCH" 2>/dev/null || true
                     return 1
                 fi
 
+                echo "[debug]   Committing uncommitted changes for PR #${pr_num}"
                 git add -A
                 git commit -m "bot: address review feedback on PR #${pr_num}"
             else
+                echo "[debug]   Opencode already committed for PR #${pr_num}:"
+                echo "$new_commits" | sed 's/^/    [debug]     /'
                 echo "opencode already committed changes for PR #${pr_num}."
             fi
 
+            echo "[debug]   Pushing to branch ${branch_name}"
             git push origin "HEAD:${branch_name}" || {
+                echo "[debug]   Push rejected; rebasing onto origin/${DEFAULT_BRANCH}"
                 git rebase "origin/${DEFAULT_BRANCH}" || error_exit "rebase failed on PR #${pr_num}" "$(git status)"
                 git push --force-with-lease origin "HEAD:${branch_name}" || error_exit "push failed on PR #${pr_num}" "$(git status)"
             }
 
             git checkout "$DEFAULT_BRANCH" 2>/dev/null || true
             return 0
+        else
+            echo "[debug]   No pending feedback on PR #${pr_num} — skipping"
         fi
     done <<< "$pr_sorted"
 
+    echo "[debug] No PRs with pending feedback found"
     return 1
 }
 
 # --- Step 2: Pick an issue --------------------------------------------------
 
 pick_issue() {
+    echo "[debug] Step 2: picking an issue to implement"
+
     local issues
     # List open issues sorted by oldest created first, excluding bot/wontfix labels.
     issues="$(gh issue list --repo "$REPO" --state open --search "sort:created-asc" \
@@ -172,7 +197,12 @@ pick_issue() {
                 (.labels // [] | map(.name) | all(. != "bot" and . != "wontfix"))
             )] | .[] | "\(.number)|\(.title)|\(.body)"')" || return 1
 
-    [ -z "$issues" ] && return 1
+    [ -z "$issues" ] && { echo "[debug] No open issues found (after filtering bot/wontfix)"; return 1; }
+
+    echo "[debug] Open issues fetched (sorted oldest first):"
+    echo "$issues" | while IFS='|' read -r n t b; do
+        echo "[debug]   Issue #$n: \"$t\""
+    done
 
     while IFS='|' read -r issue_num issue_title issue_body; do
         [ -z "$issue_num" ] && continue
@@ -182,13 +212,16 @@ pick_issue() {
         linked_pr="$(gh pr list --repo "$REPO" --state open --search "#${issue_num}" --json number --jq '.[0].number // empty' 2>/dev/null)" || linked_pr=""
 
         if [ -n "$linked_pr" ]; then
-            continue  # Skip — already has an open PR.
+            echo "[debug]   Issue #${issue_num}: skipping — already has open PR #${linked_pr}"
+            continue
         fi
 
+        echo "[debug]   Picked issue #${issue_num}: \"${issue_title}\""
         echo "${issue_num}|${issue_title}|${issue_body}"
         return 0
     done <<< "$issues"
 
+    echo "[debug] All issues already have open PRs — none available"
     return 1
 }
 
@@ -197,20 +230,27 @@ pick_issue() {
 implement_issue() {
     local issue_num="$1" issue_title="$2" issue_body="$3"
 
+    echo "[debug] Step 3: implementing issue #${issue_num}: \"${issue_title}\""
+
     local branch_name
     branch_name="$(make_branch_name "$issue_num" "$issue_title")"
 
+    echo "[debug]   Branch name: ${branch_name}"
+    echo "[debug]   Default branch: ${DEFAULT_BRANCH}"
     echo "Implementing issue #${issue_num}: ${issue_title}"
 
+    echo "[debug]   Fetching origin and checking out ${DEFAULT_BRANCH}"
     git fetch origin
     git checkout "$DEFAULT_BRANCH"
     git pull origin "$DEFAULT_BRANCH"
 
     # Clean up branch from a previous interrupted run.
     if git show-ref --verify --quiet "refs/heads/${branch_name}"; then
+        echo "[debug]   Cleaning up local branch ${branch_name} from previous run"
         git branch -D "$branch_name"
     fi
     if git show-ref --verify --quiet "refs/remotes/origin/${branch_name}"; then
+        echo "[debug]   Cleaning up remote branch origin/${branch_name} from previous run"
         git push origin --delete "$branch_name" 2>/dev/null || true
     fi
 
@@ -232,6 +272,7 @@ If anything is ambiguous, print your questions to stdout prefixed with \`QUESTIO
     local questions
     questions="$(echo "$result" | grep '^QUESTION:' || true)"
     if [ -n "$questions" ]; then
+        echo "[debug]   Opencode asked for clarification on issue #${issue_num}"
         echo "Asking for clarification on issue #${issue_num}..."
         post_questions "issue" "$issue_num" "I need clarification before proceeding:\n\n${questions}"
         git checkout "$DEFAULT_BRANCH" 2>/dev/null || true
@@ -243,24 +284,32 @@ If anything is ambiguous, print your questions to stdout prefixed with \`QUESTIO
     new_commits="$(git log --oneline "${DEFAULT_BRANCH}"..HEAD)" || new_commits=""
 
     if [ -z "$new_commits" ]; then
+        echo "[debug]   Opencode did not commit; checking for uncommitted changes"
         # No commits — check for uncommitted changes as fallback.
         if [ -z "$(git status --porcelain)" ]; then
+            echo "[debug]   No file changes from opencode for issue #${issue_num}"
             echo "No file changes from opencode for issue #${issue_num}."
             git checkout "$DEFAULT_BRANCH" 2>/dev/null || true
             return 1
         fi
 
+        echo "[debug]   Committing uncommitted changes for issue #${issue_num}"
         git add -A
         git commit -m "bot: implement #${issue_num} — ${issue_title}"
     else
+        echo "[debug]   Opencode already committed for issue #${issue_num}:"
+        echo "$new_commits" | sed 's/^/    [debug]     /'
         echo "opencode already committed changes for issue #${issue_num}."
     fi
 
+    echo "[debug]   Pushing branch ${branch_name} to origin"
     git push origin "$branch_name" || {
+        echo "[debug]   Push rejected; rebasing onto origin/${DEFAULT_BRANCH}"
         git rebase "origin/${DEFAULT_BRANCH}" || error_exit "rebase failed on issue #${issue_num}" "$(git status)"
         git push --force-with-lease origin "$branch_name" || error_exit "push failed on issue #${issue_num}" "$(git status)"
     }
 
+    echo "[debug]   Opening PR for issue #${issue_num}"
     # Open a PR.
     local pr_body="Closes #${issue_num}.
 
@@ -284,18 +333,22 @@ If anything is ambiguous, print your questions to stdout prefixed with \`QUESTIO
 
 # Attempt PR review first.
 if review_prs; then
+    echo "[debug] Completed PR review step — exiting"
     exit 0
 fi
 
 # Fall back to picking and implementing an issue.
 issue_data="$(pick_issue)" || {
+    echo "[debug] No issues available to pick"
     echo "Nothing to do"
     exit 0
 }
 
 IFS='|' read -r issue_num issue_title issue_body <<< "$issue_data"
 if implement_issue "$issue_num" "$issue_title" "$issue_body"; then
+    echo "[debug] Successfully implemented issue #${issue_num} — exiting"
     exit 0
 fi
+echo "[debug] Failed to implement issue #${issue_num}"
 echo "Failed to implement issue #${issue_num}"
 exit 0
