@@ -113,7 +113,15 @@ review_prs() {
             review_feedback="$(gh pr view "$pr_num" --repo "$REPO" --json reviews --jq '[.reviews[] | select(.state == "CHANGES_REQUESTED") | (.body // "") + if (.body // "") == "" then "\nReviewer requested changes." else "" end] | join("\n---\n")' 2>/dev/null)" || review_feedback=""
         fi
 
-        local feedback="${comments}${threads}${review_feedback}"
+        # Also check review body text from all reviews (including COMMENTED) for change requests.
+        local review_body_feedback=""
+        if [ -n "$last_push_date" ]; then
+            review_body_feedback="$(gh pr view "$pr_num" --repo "$REPO" --json reviews --jq --arg date "$last_push_date" '[.reviews[] | select(.submittedAt > $date) | .body // "" | select(length > 0)] | join("\n---\n")' 2>/dev/null)" || review_body_feedback=""
+        else
+            review_body_feedback="$(gh pr view "$pr_num" --repo "$REPO" --json reviews --jq '[.reviews[].body // "" | select(length > 0)] | join("\n---\n")' 2>/dev/null)" || review_body_feedback=""
+        fi
+
+        local feedback="${comments}${threads}${review_feedback}${review_body_feedback}"
         # Trim whitespace.
         feedback="$(printf '%s' "$feedback" | sed '/^$/d')"
 
