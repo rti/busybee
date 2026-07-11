@@ -56,6 +56,18 @@ echo "REPO=rti/busybee wrap -e GH_TOKEN -e REPO -un ./dev-loop.sh
             run --agent build --thinking
 ```
 
+### fixup opencode run
+
+```bash
+echo "
+opencode in dev-loop.sh hangs, opencode needs to be called with 'opencode run --agent build --thinking' and get the prompt via stdin
+" | wrap -und \
+          -r ~/.config/opencode/ \
+          -w ~/.local/share/opencode/ \
+          nix run nixpkgs-unstable#opencode -- \
+            run --agent build --thinking
+```
+
 ### export last session
 
 ```bash

@@ -46,7 +46,7 @@ error_exit() {
 run_opencode() {
     local prompt="$1"
     local output
-    output="$(echo "$prompt" | opencode 2>&1)" || {
+    output="$(echo "$prompt" | opencode run --agent build --thinking 2>&1)" || {
         echo "$output" >&2
         return 1
     }
