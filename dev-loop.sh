@@ -129,12 +129,13 @@ review_prs() {
         threads="$(gh pr view "$pr_num" --repo "$REPO" --json reviewThreads --jq --arg date "$bot_last_push" '[.reviewThreads[]?.comments[]? | select(.updatedAt > $date) | .body] | join("\n---\n")' 2>/dev/null)" || threads=""
 
         # Check for reviews with state CHANGES_REQUESTED after bot's last push.
+        # Use the REST API directly since `gh pr view --json reviews` does not include .body.
         local review_feedback=""
-        review_feedback="$(gh pr view "$pr_num" --repo "$REPO" --json reviews --jq --arg date "$bot_last_push" '[.reviews[] | select(.submittedAt > $date and .state == "CHANGES_REQUESTED") | (.body // "" ) + if (.body // "" ) == "" then "\nReviewer requested changes." else "" end] | join("\n---\n")' 2>/dev/null)" || review_feedback=""
+        review_feedback="$(gh api repos/"$REPO"/pulls/"$pr_num"/reviews --jq --arg date "$bot_last_push" '[.[] | select(.submitted_at > $date and .state == "CHANGES_REQUESTED") | (.body // "" ) + if (.body // "" ) == "" then "\nReviewer requested changes." else "" end] | join("\n---\n")' 2>/dev/null)" || review_feedback=""
 
         # Also check review body text from all reviews (including COMMENTED) for change requests.
         local review_body_feedback=""
-        review_body_feedback="$(gh pr view "$pr_num" --repo "$REPO" --json reviews --jq --arg date "$bot_last_push" '[.reviews[] | select(.submittedAt > $date) | .body // "" | select(length > 0)] | join("\n---\n")' 2>/dev/null)" || review_body_feedback=""
+        review_body_feedback="$(gh api repos/"$REPO"/pulls/"$pr_num"/reviews --jq --arg date "$bot_last_push" '[.[] | select(.submitted_at > $date) | .body // "" | select(length > 0)] | join("\n---\n")' 2>/dev/null)" || review_body_feedback=""
 
         local feedback="${comments}${threads}${review_feedback}${review_body_feedback}"
         # Trim whitespace.
