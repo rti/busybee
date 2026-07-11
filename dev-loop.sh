@@ -84,14 +84,34 @@ review_prs() {
 
         echo "[debug] Checking PR #${pr_num} (branch: ${branch_name}) for feedback..." >&2
 
-        # Fetch review comments that arrived after the bot's last push on this branch.
-        local last_push_date
-        last_push_date="$(git log --format=%aI -1 "origin/${branch_name}" 2>/dev/null)" || last_push_date=""
+        # Determine the baseline timestamp for detecting new feedback on this PR.
+        # We must consider not just pushes but also comments and reviews, since a PR
+        # can be updated by reviewers without any new pushes. Using the branch's last
+        # push alone is insufficient: another user's push could mask reviewer feedback
+        # that arrived between the bot's last run and that user's push.
+        local bot_last_push latest_comment_time latest_review_time
+        bot_last_push="$(git log --format=%aI --author="busybee-bot" -1 "origin/${branch_name}" 2>/dev/null)" || bot_last_push=""
+        latest_comment_time="$(gh pr view "$pr_num" --repo "$REPO" --json comments --jq '[.comments[].updatedAt] | max // empty' 2>/dev/null)" || latest_comment_time=""
+        latest_review_time="$(gh pr view "$pr_num" --repo "$REPO" --json reviews --jq '[.reviews[].submittedAt] | max // empty' 2>/dev/null)" || latest_review_time=""
+
+        # Use the bot's own last push as baseline for filtering feedback.
+        # Also check comment/review timing to detect if the PR was updated since we last checked.
+        local has_new_activity=false
+        if [ -n "$bot_last_push" ]; then
+            if [ -n "$latest_comment_time" ] && [[ "$latest_comment_time" > "$bot_last_push" ]]; then
+                has_new_activity=true
+            fi
+            if [ -n "$latest_review_time" ] && [[ "$latest_review_time" > "$bot_last_push" ]]; then
+                has_new_activity=true
+            fi
+        fi
+
+        echo "[debug]   Bot last push: ${bot_last_push:-none}; latest comment: ${latest_comment_time:-none}; latest review: ${latest_review_time:-none}; new activity: $has_new_activity" >&2
 
         local comments=""
-        if [ -n "$last_push_date" ]; then
-            echo "[debug]   Last bot push on branch: ${last_push_date}; fetching comments after that date" >&2
-            comments="$(gh pr view "$pr_num" --repo "$REPO" --json comments --jq --arg date "$last_push_date" '.comments[] | select(.updatedAt > $date) | "\(.body)\n---\n"' 2>/dev/null)" || comments=""
+        if [ -n "$bot_last_push" ]; then
+            echo "[debug]   Bot's last push: ${bot_last_push}; fetching comments after that date" >&2
+            comments="$(gh pr view "$pr_num" --repo "$REPO" --json comments --jq --arg date "$bot_last_push" '.comments[] | select(.updatedAt > $date) | "\(.body)\n---\n"' 2>/dev/null)" || comments=""
         else
             echo "[debug]   No prior bot push on branch; fetching all comments" >&2
             comments="$(gh pr view "$pr_num" --repo "$REPO" --json comments --jq '.comments[].body' 2>/dev/null)" || comments=""
@@ -99,24 +119,24 @@ review_prs() {
 
         # Also check review threads.
         local threads=""
-        if [ -n "$last_push_date" ]; then
-            threads="$(gh pr view "$pr_num" --repo "$REPO" --json reviewThreads --jq --arg date "$last_push_date" '[.reviewThreads[]?.comments[]? | select(.updatedAt > $date) | .body] | join("\n---\n")' 2>/dev/null)" || threads=""
+        if [ -n "$bot_last_push" ]; then
+            threads="$(gh pr view "$pr_num" --repo "$REPO" --json reviewThreads --jq --arg date "$bot_last_push" '[.reviewThreads[]?.comments[]? | select(.updatedAt > $date) | .body] | join("\n---\n")' 2>/dev/null)" || threads=""
         else
             threads="$(gh pr view "$pr_num" --repo "$REPO" --json reviewThreads --jq '[.reviewThreads[]?.comments[]?.body // ""] | join("\n---\n")' 2>/dev/null)" || threads=""
         fi
 
-        # Check for reviews with state CHANGES_REQUESTED after last push.
+        # Check for reviews with state CHANGES_REQUESTED after bot's last push.
         local review_feedback=""
-        if [ -n "$last_push_date" ]; then
-            review_feedback="$(gh pr view "$pr_num" --repo "$REPO" --json reviews --jq --arg date "$last_push_date" '[.reviews[] | select(.submittedAt > $date and .state == "CHANGES_REQUESTED") | (.body // "" ) + if (.body // "" ) == "" then "\nReviewer requested changes." else "" end] | join("\n---\n")' 2>/dev/null)" || review_feedback=""
+        if [ -n "$bot_last_push" ]; then
+            review_feedback="$(gh pr view "$pr_num" --repo "$REPO" --json reviews --jq --arg date "$bot_last_push" '[.reviews[] | select(.submittedAt > $date and .state == "CHANGES_REQUESTED") | (.body // "" ) + if (.body // "" ) == "" then "\nReviewer requested changes." else "" end] | join("\n---\n")' 2>/dev/null)" || review_feedback=""
         else
             review_feedback="$(gh pr view "$pr_num" --repo "$REPO" --json reviews --jq '[.reviews[] | select(.state == "CHANGES_REQUESTED") | (.body // "") + if (.body // "") == "" then "\nReviewer requested changes." else "" end] | join("\n---\n")' 2>/dev/null)" || review_feedback=""
         fi
 
         # Also check review body text from all reviews (including COMMENTED) for change requests.
         local review_body_feedback=""
-        if [ -n "$last_push_date" ]; then
-            review_body_feedback="$(gh pr view "$pr_num" --repo "$REPO" --json reviews --jq --arg date "$last_push_date" '[.reviews[] | select(.submittedAt > $date) | .body // "" | select(length > 0)] | join("\n---\n")' 2>/dev/null)" || review_body_feedback=""
+        if [ -n "$bot_last_push" ]; then
+            review_body_feedback="$(gh pr view "$pr_num" --repo "$REPO" --json reviews --jq --arg date "$bot_last_push" '[.reviews[] | select(.submittedAt > $date) | .body // "" | select(length > 0)] | join("\n---\n")' 2>/dev/null)" || review_body_feedback=""
         else
             review_body_feedback="$(gh pr view "$pr_num" --repo "$REPO" --json reviews --jq '[.reviews[].body // "" | select(length > 0)] | join("\n---\n")' 2>/dev/null)" || review_body_feedback=""
         fi
