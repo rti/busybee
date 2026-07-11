@@ -108,7 +108,7 @@ review_prs() {
         # Check for reviews with state CHANGES_REQUESTED after last push.
         local review_feedback=""
         if [ -n "$last_push_date" ]; then
-            review_feedback="$(gh pr view "$pr_num" --repo "$REPO" --json reviews --jq --arg date "$last_push_date" '[.reviews[] | select(.updatedAt > $date and .state == "CHANGES_REQUESTED") | (.body // "" ) + if (.body // "" ) == "" then "\nReviewer requested changes." else "" end] | join("\n---\n")' 2>/dev/null)" || review_feedback=""
+            review_feedback="$(gh pr view "$pr_num" --repo "$REPO" --json reviews --jq --arg date "$last_push_date" '[.reviews[] | select(.submittedAt > $date and .state == "CHANGES_REQUESTED") | (.body // "" ) + if (.body // "" ) == "" then "\nReviewer requested changes." else "" end] | join("\n---\n")' 2>/dev/null)" || review_feedback=""
         else
             review_feedback="$(gh pr view "$pr_num" --repo "$REPO" --json reviews --jq '[.reviews[] | select(.state == "CHANGES_REQUESTED") | (.body // "") + if (.body // "") == "" then "\nReviewer requested changes." else "" end] | join("\n---\n")' 2>/dev/null)" || review_feedback=""
         fi
