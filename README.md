@@ -112,7 +112,7 @@ No file changes from opencode for issue #1.
 Your branch is ahead of 'origin/main' by 4 commits.
 ❱ git log 1-move-all-session-dumps-into-a-subfolder- -n1
 commit 0d142d4d2d897c1c5fbd639b3383b3338095b9f8 (1-move-all-session-dumps-into-a-subfolder-)
-Author: busybee-bot <bot@busybee.dev>
+Author: busybee-bot <busybee-bot@users.noreply.github.com>
 Date:   Sat Jul 11 15:02:31 2026 +0000
 
     refactor: move all session dumps into sessions/ subfolder with index prefixes

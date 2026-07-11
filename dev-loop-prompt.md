@@ -19,7 +19,7 @@ You are a script architect. Your task is to write a single self-contained bash s
   - `REPO` — owner/repo in the format `<owner>/<repo>`.
 - Agent harness: `opencode` is available on PATH and accepts a prompt string via stdin or a `-p`/`--prompt` flag. The script should pipe a structured prompt to opencode and capture its output or let it edit files in the working directory.
 - All dependencies (`gh`, `opencode`, `git`) are expected to be installed in the environment. Do not install anything.
-- Git identity: configure `user.name` as "busybee-bot" and `user.email` as "bot@busybee.dev" at the top of the script.
+- Git identity: configure `user.name` as "busybee-bot" and `user.email` as "busybee-bot@users.noreply.github.com" at the top of the script.
 - Branch naming: `<issue-number>-<short-slug>` derived from the issue title (lowercase, spaces to hyphens, max 40 chars).
 - PR titles and bodies must reference the originating issue number.
 - The script must run from the root of a cloned copy of `$REPO`.

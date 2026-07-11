@@ -8,7 +8,7 @@ set -euo pipefail
 
 # --- Git identity -----------------------------------------------------------
 git config user.name "busybee-bot"
-git config user.email "bot@busybee.dev"
+git config user.email "busybee-bot@users.noreply.github.com"
 
 # --- Required environment ---------------------------------------------------
 : "${GH_TOKEN:?Environment variable GH_TOKEN is required}"
