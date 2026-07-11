@@ -197,6 +197,15 @@ implement_issue() {
     git fetch origin
     git checkout "$DEFAULT_BRANCH"
     git pull origin "$DEFAULT_BRANCH"
+
+    # Clean up branch from a previous interrupted run.
+    if git show-ref --verify --quiet "refs/heads/${branch_name}"; then
+        git branch -D "$branch_name"
+    fi
+    if git show-ref --verify --quiet "refs/remotes/origin/${branch_name}"; then
+        git push origin --delete "$branch_name" 2>/dev/null || true
+    fi
+
     git checkout -b "$branch_name"
 
     local prompt="You are implementing GitHub issue #${issue_num} titled \"${issue_title}\".

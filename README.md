@@ -68,6 +68,23 @@ opencode in dev-loop.sh hangs, opencode needs to be called with 'opencode run --
             run --agent build --thinking
 ```
 
+### fixup branch exists
+```bash
+echo "dev-loop.sh invocation error:
+Already on 'main'
+Your branch is ahead of 'origin/main' by 3 commits.
+  (use 'git push' to publish your local commits)
+From https://github.com/rti/busybee
+ * branch            main       -> FETCH_HEAD
+Already up to date.
+fatal: a branch named '1-move-all-session-dumps-into-a-subfolder-' already exists
+" | wrap -und \
+          -r ~/.config/opencode/ \
+          -w ~/.local/share/opencode/ \
+          nix run nixpkgs-unstable#opencode -- \
+            run --agent build --thinking
+```
+
 ### export last session
 
 ```bash
