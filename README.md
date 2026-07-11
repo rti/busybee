@@ -16,10 +16,22 @@ cat bootstrap-prompt.md | \
 
 ```bash
 cat dev-loop-prompt.md | \
-        wrap -und \
-          -r ~/.config/opencode/ \
-          -w ~/.local/share/opencode/ \
-          nix run nixpkgs-unstable#opencode -- \
+    wrap -und \
+        -r ~/.config/opencode/ \
+        -w ~/.local/share/opencode/ \
+        nix run nixpkgs-unstable#opencode -- \
+        run --agent build --thinking 
+```
+
+### fixup script
+
+```bash
+REPO=rti/busybee \
+    wrap -e GH_TOKEN -e REPO -n ./dev-loop.sh 2>&1 | \
+    wrap -und \
+        -r ~/.config/opencode/ \
+        -w ~/.local/share/opencode/ \
+        nix run nixpkgs-unstable#opencode -- \
             run --agent build --thinking 
 ```
 
