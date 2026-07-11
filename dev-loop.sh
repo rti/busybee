@@ -99,9 +99,21 @@ review_prs() {
 
         # Also check review threads.
         local threads=""
-        threads="$(gh pr view "$pr_num" --repo "$REPO" --json reviewThreads --jq '.reviewThreads[]?.comments[]?.body // ""' 2>/dev/null)" || threads=""
+        if [ -n "$last_push_date" ]; then
+            threads="$(gh pr view "$pr_num" --repo "$REPO" --json reviewThreads --jq --arg date "$last_push_date" '[.reviewThreads[]?.comments[]? | select(.updatedAt > $date) | .body] | join("\n---\n")' 2>/dev/null)" || threads=""
+        else
+            threads="$(gh pr view "$pr_num" --repo "$REPO" --json reviewThreads --jq '[.reviewThreads[]?.comments[]?.body // ""] | join("\n---\n")' 2>/dev/null)" || threads=""
+        fi
 
-        local feedback="${comments}${threads}"
+        # Check for reviews with state CHANGES_REQUESTED after last push.
+        local review_feedback=""
+        if [ -n "$last_push_date" ]; then
+            review_feedback="$(gh pr view "$pr_num" --repo "$REPO" --json reviews --jq --arg date "$last_push_date" '[.reviews[] | select(.updatedAt > $date and .state == "CHANGES_REQUESTED") | (.body // "" ) + if (.body // "" ) == "" then "\nReviewer requested changes." else "" end] | join("\n---\n")' 2>/dev/null)" || review_feedback=""
+        else
+            review_feedback="$(gh pr view "$pr_num" --repo "$REPO" --json reviews --jq '[.reviews[] | select(.state == "CHANGES_REQUESTED") | (.body // "") + if (.body // "") == "" then "\nReviewer requested changes." else "" end] | join("\n---\n")' 2>/dev/null)" || review_feedback=""
+        fi
+
+        local feedback="${comments}${threads}${review_feedback}"
         # Trim whitespace.
         feedback="$(printf '%s' "$feedback" | sed '/^$/d')"
 
