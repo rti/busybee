@@ -45,12 +45,9 @@ error_exit() {
 # If the output contains lines prefixed with QUESTION:, return them for posting.
 run_opencode() {
     local prompt="$1"
-    local output
-    output="$(echo "$prompt" | opencode run --agent build --thinking 2>&1)" || {
-        echo "$output" >&2
-        return 1
-    }
-    echo "$output"
+    local exit_code=0
+    echo "$prompt" | opencode run --agent build --thinking 2>&1 | tee /dev/stderr || exit_code=$?
+    return "$exit_code"
 }
 
 # Post clarification questions to an issue or PR.
