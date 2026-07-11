@@ -108,38 +108,33 @@ review_prs() {
 
         echo "[debug]   Bot last push: ${bot_last_push:-none}; latest comment: ${latest_comment_time:-none}; latest review: ${latest_review_time:-none}; new activity: $has_new_activity" >&2
 
-        local comments=""
-        if [ -n "$bot_last_push" ]; then
-            echo "[debug]   Bot's last push: ${bot_last_push}; fetching comments after that date" >&2
-            comments="$(gh pr view "$pr_num" --repo "$REPO" --json comments --jq --arg date "$bot_last_push" '.comments[] | select(.updatedAt > $date) | "\(.body)\n---\n"' 2>/dev/null)" || comments=""
-        else
-            echo "[debug]   No prior bot push on branch; fetching all comments" >&2
-            comments="$(gh pr view "$pr_num" --repo "$REPO" --json comments --jq '.comments[].body' 2>/dev/null)" || comments=""
+        # Skip PRs the bot didn't create (no bot commits on the branch).
+        if [ -z "$bot_last_push" ]; then
+            echo "[debug]   No bot commits on this branch — skipping (not our PR)" >&2
+            continue
         fi
+
+        # Skip PRs with no new activity since the bot's last push.
+        if [ "$has_new_activity" = false ]; then
+            echo "[debug]   No new activity on PR #${pr_num} — skipping" >&2
+            continue
+        fi
+
+        local comments=""
+        echo "[debug]   Bot's last push: ${bot_last_push}; fetching comments after that date" >&2
+        comments="$(gh pr view "$pr_num" --repo "$REPO" --json comments --jq --arg date "$bot_last_push" '.comments[] | select(.updatedAt > $date) | "\(.body)\n---\n"' 2>/dev/null)" || comments=""
 
         # Also check review threads.
         local threads=""
-        if [ -n "$bot_last_push" ]; then
-            threads="$(gh pr view "$pr_num" --repo "$REPO" --json reviewThreads --jq --arg date "$bot_last_push" '[.reviewThreads[]?.comments[]? | select(.updatedAt > $date) | .body] | join("\n---\n")' 2>/dev/null)" || threads=""
-        else
-            threads="$(gh pr view "$pr_num" --repo "$REPO" --json reviewThreads --jq '[.reviewThreads[]?.comments[]?.body // ""] | join("\n---\n")' 2>/dev/null)" || threads=""
-        fi
+        threads="$(gh pr view "$pr_num" --repo "$REPO" --json reviewThreads --jq --arg date "$bot_last_push" '[.reviewThreads[]?.comments[]? | select(.updatedAt > $date) | .body] | join("\n---\n")' 2>/dev/null)" || threads=""
 
         # Check for reviews with state CHANGES_REQUESTED after bot's last push.
         local review_feedback=""
-        if [ -n "$bot_last_push" ]; then
-            review_feedback="$(gh pr view "$pr_num" --repo "$REPO" --json reviews --jq --arg date "$bot_last_push" '[.reviews[] | select(.submittedAt > $date and .state == "CHANGES_REQUESTED") | (.body // "" ) + if (.body // "" ) == "" then "\nReviewer requested changes." else "" end] | join("\n---\n")' 2>/dev/null)" || review_feedback=""
-        else
-            review_feedback="$(gh pr view "$pr_num" --repo "$REPO" --json reviews --jq '[.reviews[] | select(.state == "CHANGES_REQUESTED") | (.body // "") + if (.body // "") == "" then "\nReviewer requested changes." else "" end] | join("\n---\n")' 2>/dev/null)" || review_feedback=""
-        fi
+        review_feedback="$(gh pr view "$pr_num" --repo "$REPO" --json reviews --jq --arg date "$bot_last_push" '[.reviews[] | select(.submittedAt > $date and .state == "CHANGES_REQUESTED") | (.body // "" ) + if (.body // "" ) == "" then "\nReviewer requested changes." else "" end] | join("\n---\n")' 2>/dev/null)" || review_feedback=""
 
         # Also check review body text from all reviews (including COMMENTED) for change requests.
         local review_body_feedback=""
-        if [ -n "$bot_last_push" ]; then
-            review_body_feedback="$(gh pr view "$pr_num" --repo "$REPO" --json reviews --jq --arg date "$bot_last_push" '[.reviews[] | select(.submittedAt > $date) | .body // "" | select(length > 0)] | join("\n---\n")' 2>/dev/null)" || review_body_feedback=""
-        else
-            review_body_feedback="$(gh pr view "$pr_num" --repo "$REPO" --json reviews --jq '[.reviews[].body // "" | select(length > 0)] | join("\n---\n")' 2>/dev/null)" || review_body_feedback=""
-        fi
+        review_body_feedback="$(gh pr view "$pr_num" --repo "$REPO" --json reviews --jq --arg date "$bot_last_push" '[.reviews[] | select(.submittedAt > $date) | .body // "" | select(length > 0)] | join("\n---\n")' 2>/dev/null)" || review_body_feedback=""
 
         local feedback="${comments}${threads}${review_feedback}${review_body_feedback}"
         # Trim whitespace.
