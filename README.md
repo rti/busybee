@@ -113,6 +113,16 @@ Date:   Sat Jul 11 15:02:31 2026 +0000
             run --agent build --thinking
 ```
 
+### fixup syntax
+```bash
+nix run nixpkgs#shellcheck dev-loop.sh | \
+        wrap -und \
+          -r ~/.config/opencode/ \
+          -w ~/.local/share/opencode/ \
+          nix run nixpkgs-unstable#opencode -- \
+            run --agent build --thinking
+```
+
 ### export last session
 
 ```bash

@@ -82,20 +82,20 @@ review_prs() {
         local last_push_date
         last_push_date="$(git log --format=%aI -1 "origin/${branch_name}" 2>/dev/null)" || last_push_date=""
 
-        local comments
+        local comments=""
         if [ -n "$last_push_date" ]; then
-            comments="$(gh pr view "$pr_num" --repo "$REPO" --json comments --jq '.comments[] | select(.updatedAt > "'"$last_push_date"'") | "\(.body)\n---\n')" 2>/dev/null" || comments=""
+            comments="$(gh pr view "$pr_num" --repo "$REPO" --json comments --jq --arg date "$last_push_date" '.comments[] | select(.updatedAt > $date) | "\(.body)\n---\n"' 2>/dev/null)" || comments=""
         else
             comments="$(gh pr view "$pr_num" --repo "$REPO" --json comments --jq '.comments[].body' 2>/dev/null)" || comments=""
         fi
 
         # Also check review threads.
-        local threads
+        local threads=""
         threads="$(gh pr view "$pr_num" --repo "$REPO" --json reviewThreads --jq '.reviewThreads[]?.comments[]?.body // ""' 2>/dev/null)" || threads=""
 
         local feedback="${comments}${threads}"
         # Trim whitespace.
-        feedback="$(echo "$feedback" | sed '/^$/d')"
+        feedback="$(printf '%s' "$feedback" | sed '/^$/d')"
 
         if [ -n "$feedback" ]; then
             echo "Addressing feedback on PR #${pr_num}..."
