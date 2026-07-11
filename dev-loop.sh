@@ -130,15 +130,23 @@ If anything is ambiguous, print your questions to stdout prefixed with \`QUESTIO
                 return 0
             fi
 
-            # Commit any changes.
-            if [ -z "$(git status --porcelain)" ]; then
-                echo "No file changes from opencode; nothing to commit."
-                git checkout "$DEFAULT_BRANCH" 2>/dev/null || true
-                return 1
-            fi
+            # Check if opencode made any commits.
+            local new_commits
+            new_commits="$(git log --oneline "origin/${branch_name}"..HEAD)" || new_commits=""
 
-            git add -A
-            git commit -m "bot: address review feedback on PR #${pr_num}"
+            if [ -z "$new_commits" ]; then
+                # No commits — check for uncommitted changes as fallback.
+                if [ -z "$(git status --porcelain)" ]; then
+                    echo "No file changes from opencode; nothing to commit."
+                    git checkout "$DEFAULT_BRANCH" 2>/dev/null || true
+                    return 1
+                fi
+
+                git add -A
+                git commit -m "bot: address review feedback on PR #${pr_num}"
+            else
+                echo "opencode already committed changes for PR #${pr_num}."
+            fi
 
             git push origin "HEAD:${branch_name}" || {
                 git rebase "origin/${DEFAULT_BRANCH}" || error_exit "rebase failed on PR #${pr_num}" "$(git status)"
@@ -230,15 +238,23 @@ If anything is ambiguous, print your questions to stdout prefixed with \`QUESTIO
         return 0
     fi
 
-    # Commit changes.
-    if [ -z "$(git status --porcelain)" ]; then
-        echo "No file changes from opencode for issue #${issue_num}."
-        git checkout "$DEFAULT_BRANCH" 2>/dev/null || true
-        return 1
-    fi
+    # Check if opencode made any commits.
+    local new_commits
+    new_commits="$(git log --oneline "${DEFAULT_BRANCH}"..HEAD)" || new_commits=""
 
-    git add -A
-    git commit -m "bot: implement #${issue_num} — ${issue_title}"
+    if [ -z "$new_commits" ]; then
+        # No commits — check for uncommitted changes as fallback.
+        if [ -z "$(git status --porcelain)" ]; then
+            echo "No file changes from opencode for issue #${issue_num}."
+            git checkout "$DEFAULT_BRANCH" 2>/dev/null || true
+            return 1
+        fi
+
+        git add -A
+        git commit -m "bot: implement #${issue_num} — ${issue_title}"
+    else
+        echo "opencode already committed changes for issue #${issue_num}."
+    fi
 
     git push origin "$branch_name" || {
         git rebase "origin/${DEFAULT_BRANCH}" || error_exit "rebase failed on issue #${issue_num}" "$(git status)"
