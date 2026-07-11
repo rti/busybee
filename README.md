@@ -35,6 +35,27 @@ REPO=rti/busybee \
             run --agent build --thinking 
 ```
 
+### fixup script git ssh access
+
+```bash
+echo "REPO=rti/busybee wrap -e GH_TOKEN -e REPO -un ./dev-loop.sh
+  The authenticity of host 'github.com (20.205.243.166)' can't be established.
+  ED25519 key fingerprint is: SHA256:+DiY3wvvV6TuJJhbpZisF/zLDA0zPMSvHdkr4UvCOqU
+  This key is not known by any other names.
+  Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+  Warning: Permanently added 'github.com' (ED25519) to the list of known hosts.
+  git@github.com: Permission denied (publickey).
+  fatal: Could not read from remote repository.
+
+  Please make sure you have the correct access rights
+  and the repository exists." | \
+    wrap -und \
+        -r ~/.config/opencode/ \
+        -w ~/.local/share/opencode/ \
+        nix run nixpkgs-unstable#opencode -- \
+            run --agent build --thinking
+```
+
 ### export last session
 
 ```bash

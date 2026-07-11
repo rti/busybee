@@ -14,6 +14,9 @@ git config user.email "bot@busybee.dev"
 : "${GH_TOKEN:?Environment variable GH_TOKEN is required}"
 : "${REPO:?Environment variable REPO is required}"
 
+# Use token-based HTTPS for git operations (avoids SSH key requirements)
+git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git"
+
 DEFAULT_BRANCH="$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's|refs/remotes/origin/||')" || DEFAULT_BRANCH="main"
 
 # --- Helpers ----------------------------------------------------------------
