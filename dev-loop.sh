@@ -165,8 +165,8 @@ If anything is ambiguous, print your questions to stdout prefixed with \`QUESTIO
 
 pick_issue() {
     local issues
-    # List open issues sorted by most recently updated, excluding bot/wontfix labels.
-    issues="$(gh issue list --repo "$REPO" --state open --search "sort:updated-desc" \
+    # List open issues sorted by oldest created first, excluding bot/wontfix labels.
+    issues="$(gh issue list --repo "$REPO" --state open --search "sort:created-asc" \
         --json number,title,body,labels --jq '
             [.[] | select(
                 (.labels // [] | map(.name) | all(. != "bot" and . != "wontfix"))
