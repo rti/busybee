@@ -16,10 +16,8 @@ The script sets git identity to `busybee-bot <busybee-bot@users.noreply.github.c
 
 ## Hugo website
 
-This repo contains a Hugo static site using the Ananke theme (managed as a git submodule in `themes/ananke`).
+This repo contains a Hugo static site using the Ananke theme (managed as a git submodule in `themes/ananke`). The `public/` folder is **not** tracked in git; GitHub Actions builds it.
 
-- **Build:** Run `hugo` to generate the site into `public/`.
-- **Commit public/:** The `public/` folder is tracked in git. Whenever content or layout changes are made, build with `hugo` and commit the updated `public/` output.
 - **Submodules:** After checking out a branch, run `git submodule update --init --recursive` to ensure the Ananke theme is available.
 
 ## Agents skills

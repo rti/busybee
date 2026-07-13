@@ -205,7 +205,6 @@ If anything is ambiguous, print your questions to stdout prefixed with \`QUESTIO
                 fi
 
                 echo "[debug]   Committing uncommitted changes for PR #${pr_num}" >&2
-                hugo || error_exit "hugo build failed on PR #${pr_num}" "$(git status)"
                 git add -A
                 git commit -m "bot: address review feedback on PR #${pr_num}"
             else
@@ -213,11 +212,6 @@ If anything is ambiguous, print your questions to stdout prefixed with \`QUESTIO
                 while IFS= read -r line; do echo "    [debug]     $line"; done <<< "$new_commits" >&2
                 echo "opencode already committed changes for PR #${pr_num}."
             fi
-
-            echo "[debug]   Building Hugo site" >&2
-            hugo || error_exit "hugo build failed on PR #${pr_num}" "$(git status)"
-            git add -A
-            git commit --amend --no-edit || true
 
             echo "[debug]   Pushing to branch ${branch_name}" >&2
             git push origin "HEAD:${branch_name}" || {
@@ -358,7 +352,6 @@ If anything is ambiguous, print your questions to stdout prefixed with \`QUESTIO
         fi
 
         echo "[debug]   Committing uncommitted changes for issue #${issue_num}" >&2
-        hugo || error_exit "hugo build failed on issue #${issue_num}" "$(git status)"
         git add -A
         git commit -m "bot: implement #${issue_num} — ${issue_title}"
     else
@@ -366,11 +359,6 @@ If anything is ambiguous, print your questions to stdout prefixed with \`QUESTIO
         while IFS= read -r line; do echo "    [debug]     $line"; done <<< "$new_commits" >&2
         echo "opencode already committed changes for issue #${issue_num}."
     fi
-
-    echo "[debug]   Building Hugo site" >&2
-    hugo || error_exit "hugo build failed on issue #${issue_num}" "$(git status)"
-    git add -A
-    git commit --amend --no-edit || true
 
     echo "[debug]   Pushing branch ${branch_name} to origin" >&2
     git push origin "$branch_name" || {
