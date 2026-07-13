@@ -375,7 +375,7 @@ Diff:
 ${diff_full}"
 
     local summary
-    summary="$(echo "$summary_prompt" | opencode run --agent build --thinking 2>&1)" || summary=""
+    summary="$(echo "$summary_prompt" | opencode run --agent build 2>&1)" || summary=""
 
     echo "[debug]   Opening PR for issue #${issue_num}" >&2
     # Open a PR.
