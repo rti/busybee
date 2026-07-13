@@ -81,7 +81,7 @@ review_prs() {
 
     git fetch origin
 
-    while IFS='|' read -r pr_num updated_at pr_title branch_name; do
+    while IFS='|' read -r pr_num _updated_at pr_title branch_name; do
         [ -z "$pr_num" ] && continue
 
         echo "[debug] Checking PR #${pr_num} (branch: ${branch_name}) for feedback..." >&2
@@ -175,7 +175,7 @@ If anything is ambiguous, print your questions to stdout prefixed with \`QUESTIO
                 git commit -m "bot: address review feedback on PR #${pr_num}"
             else
                 echo "[debug]   Opencode already committed for PR #${pr_num}:" >&2
-                echo "$new_commits" | sed 's/^/    [debug]     /' >&2
+                while IFS= read -r line; do echo "    [debug]     $line"; done <<< "$new_commits" >&2
                 echo "opencode already committed changes for PR #${pr_num}."
             fi
 
@@ -311,7 +311,7 @@ If anything is ambiguous, print your questions to stdout prefixed with \`QUESTIO
         git commit -m "bot: implement #${issue_num} — ${issue_title}"
     else
         echo "[debug]   Opencode already committed for issue #${issue_num}:" >&2
-        echo "$new_commits" | sed 's/^/    [debug]     /' >&2
+        while IFS= read -r line; do echo "    [debug]     $line"; done <<< "$new_commits" >&2
         echo "opencode already committed changes for issue #${issue_num}."
     fi
 
