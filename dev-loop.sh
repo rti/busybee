@@ -120,25 +120,29 @@ review_prs() {
             continue
         fi
 
-        local comments=""
-        echo "[debug]   Bot's last push: ${bot_last_push}; fetching comments after that date" >&2
-        comments="$(gh pr view "$pr_num" --repo "$REPO" --json comments | jq --arg date "$bot_last_push" '[.comments[] | select(.updatedAt > $date) | .body] | join("\n---\n")' 2>/dev/null)" || comments=""
+        # Fetch all feedback from three sources since the bot's last push.
+        local pr_comments="" review_bodies="" inline_comments=""
 
-        # Review threads are covered by inline_comments (REST /pulls/{pr}/comments endpoint).
+        # /issues/{n}/comments — general PR discussion comments.
+        pr_comments="$(gh api repos/"$REPO"/issues/"$pr_num"/comments | jq --arg date "$bot_last_push" \
+            '[.[] | select(.created_at > $date) | .body // "" | select(length > 0)] | join("\n---\n")' 2>/dev/null)" || pr_comments=""
 
-        # Check for reviews with state CHANGES_REQUESTED after bot's last push.
-        local review_feedback=""
-        review_feedback="$(gh api repos/"$REPO"/pulls/"$pr_num"/reviews | jq --arg date "$bot_last_push" '[.[] | select(.submitted_at > $date and .state == "CHANGES_REQUESTED") | (.body // "" ) + if (.body // "" ) == "" then "\nReviewer requested changes." else "" end] | join("\n---\n")' 2>/dev/null)" || review_feedback=""
+        # /pulls/{n}/reviews — review summary bodies (any state: APPROVED, COMMENTED, CHANGES_REQUESTED).
+        review_bodies="$(gh api repos/"$REPO"/pulls/"$pr_num"/reviews | jq --arg date "$bot_last_push" \
+            '[.[] | select(.submitted_at > $date) | .body // "" | select(length > 0)] | join("\n---\n")' 2>/dev/null)" || review_bodies=""
 
-        # Also check review body text from all reviews (including COMMENTED) for change requests.
-        local review_body_feedback=""
-        review_body_feedback="$(gh api repos/"$REPO"/pulls/"$pr_num"/reviews | jq --arg date "$bot_last_push" '[.[] | select(.submitted_at > $date) | .body // "" | select(length > 0)] | join("\n---\n")' 2>/dev/null)" || review_body_feedback=""
+        # /pulls/{n}/comments — inline file-level review comments.
+        inline_comments="$(gh api repos/"$REPO"/pulls/"$pr_num"/comments | jq --arg date "$bot_last_push" \
+            '[.[] | select(.created_at > $date) | .body // "" | select(length > 0)] | join("\n---\n")' 2>/dev/null)" || inline_comments=""
 
-        # Fetch inline review comments from the dedicated review comments endpoint.
-        local inline_comments=""
-        inline_comments="$(gh api repos/"$REPO"/pulls/"$pr_num"/comments | jq --arg date "$bot_last_push" '[.[] | select(.created_at > $date) | .body // "" | select(length > 0)] | join("\n---\n")' 2>/dev/null)" || inline_comments=""
+        echo "[debug]   PR comments: ${pr_comments:-<empty>}" >&2
+        echo "[debug]   Review bodies: ${review_bodies:-<empty>}" >&2
+        echo "[debug]   Inline comments: ${inline_comments:-<empty>}" >&2
 
-        local feedback="${comments}${review_feedback}${review_body_feedback}${inline_comments}"
+        local feedback=""
+        [ -n "$pr_comments" ] && feedback+="$pr_comments"$'\n---\n'
+        [ -n "$review_bodies" ] && feedback+="$review_bodies"$'\n---\n'
+        [ -n "$inline_comments" ] && feedback+="$inline_comments"$'\n---\n'
         # Trim whitespace.
         feedback="$(printf '%s' "$feedback" | sed '/^$/d')"
 
