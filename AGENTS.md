@@ -12,7 +12,7 @@ nix run nixpkgs#shellcheck -- dev-loop.sh
 
 ## Git identity
 
-The script sets git identity to `busybee-bot <busybee-bot@users.noreply.github.com>`. Commits are attributed to this bot account.
+The script sets git identity to `busybee-bot <busybee-bot@users.noreply.github.com>`.
 
 ## Agents skills
 
