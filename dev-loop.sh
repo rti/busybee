@@ -137,7 +137,11 @@ review_prs() {
         local review_body_feedback=""
         review_body_feedback="$(gh api repos/"$REPO"/pulls/"$pr_num"/reviews --jq --arg date "$bot_last_push" '[.[] | select(.submitted_at > $date) | .body // "" | select(length > 0)] | join("\n---\n")' 2>/dev/null)" || review_body_feedback=""
 
-        local feedback="${comments}${threads}${review_feedback}${review_body_feedback}"
+        # Fetch inline review comments from the dedicated review comments endpoint.
+        local inline_comments=""
+        inline_comments="$(gh api repos/"$REPO"/pulls/"$pr_num"/comments --jq --arg date "$bot_last_push" '[.[] | select(.created_at > $date) | .body // "" | select(length > 0)] | join("\n---\n")' 2>/dev/null)" || inline_comments=""
+
+        local feedback="${comments}${threads}${review_feedback}${review_body_feedback}${inline_comments}"
         # Trim whitespace.
         feedback="$(printf '%s' "$feedback" | sed '/^$/d')"
 
