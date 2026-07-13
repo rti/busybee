@@ -2,10 +2,13 @@
 
 ## Linting & verification
 
-No build system, test suite, or CI. To lint the script:
+No build system, test suite, or CI.
+
+To lint the script:
 ```bash
 nix run nixpkgs#shellcheck -- dev-loop.sh
 ```
+**NEVER** run `run-loop.sh` or `nix run .#`. You are running inside this context already!
 
 ## Git identity
 
