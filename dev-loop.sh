@@ -132,9 +132,9 @@ review_prs() {
             local pr_body
             pr_body="$(gh pr view "$pr_num" --repo "$REPO" --json body --jq '.body')" || pr_body=""
 
-            # Extract linked issue number(s) from the PR body (e.g. "Closes #42", "Fixes #7", "#123").
+            # Extract linked issue number from the PR body (always "Closes #1234").
             local linked_issue_num="" linked_issue_title="" linked_issue_body="" linked_issue_comments=""
-            linked_issue_num="$(echo "$pr_body" | grep -oE '#[0-9]+' | head -1 | tr -d '#' || true)"
+            linked_issue_num="$(echo "$pr_body" | grep -oE 'Closes #[0-9]+' | head -1 | grep -oE '[0-9]+' || true)"
             if [ -n "$linked_issue_num" ]; then
                 linked_issue_title="$(gh issue view "$linked_issue_num" --repo "$REPO" --json title --jq '.title' 2>/dev/null)" || linked_issue_title=""
                 linked_issue_body="$(gh issue view "$linked_issue_num" --repo "$REPO" --json body --jq '.body' 2>/dev/null)" || linked_issue_body=""
