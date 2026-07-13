@@ -379,6 +379,11 @@ ${summary}
 # Main loop: one step per invocation
 # =============================================================================
 
+# Ensure we are on the default branch and up to date.
+git fetch origin
+git checkout "$DEFAULT_BRANCH"
+git pull origin "$DEFAULT_BRANCH"
+
 # Attempt PR review first.
 if review_prs; then
     echo "[debug] Completed PR review step — exiting" >&2
