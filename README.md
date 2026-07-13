@@ -9,26 +9,3 @@ GH_TOKEN=gho_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX \
   wrap -e GH_TOKEN -e REPO -n -r ~/.config/opencode \
   nix run .
 ```
-
-
-### bootstrap
-
-See `bootstrap/README.md` for the full bootstrap process, fixup notes, and session dump index.
-
-Quick start with opencode and [nixwrap](https://github.com/rti/nixwrap):
-
-```bash
-cat bootstrap/bootstrap-prompt.md | \
-  wrap -und \
-    -r ~/.config/opencode/ \
-    -w ~/.local/share/opencode/ \
-    nix run nixpkgs-unstable#opencode -- \
-      run --agent build --thinking 
-```
-
-
-### export last session
-
-```bash
-opencode export (opencode session list | head -n3 | tail -n1 | cut -d' ' -f1) > session-name.json
-```
