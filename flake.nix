@@ -28,14 +28,15 @@
       };
 
       devShells.${system}.default = pkgs.mkShell {
-        packages = with pkgs; [
-          bash
-          git
-          gh
-          jq
-          opencode
-          shellcheck
-        ];
+          packages = with pkgs; [
+            bash
+            git
+            gh
+            jq
+            opencode
+            shellcheck
+            hugo
+          ];
       };
     };
 }
