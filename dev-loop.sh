@@ -107,8 +107,8 @@ review_prs() {
             '[.[] | select(.submitted_at > $date) | .body // "" | select(length > 0)] | join("\n---\n")' 2>/dev/null)" || review_bodies=""
 
         # /pulls/{n}/comments — inline file-level review comments.
-        inline_comments="$(gh api repos/"$REPO"/pulls/"$pr_num"/comments | jq --arg date "$bot_last_push" \
-            '[.[] | select(.created_at > $date) | .body // "" | select(length > 0)] | join("\n---\n")' 2>/dev/null)" || inline_comments=""
+        inline_comments="$(gh api repos/"$REPO"/pulls/"$pr_num"/comments | jq --arg date "$bot_last_push" -r \
+            '[.[] | select(.created_at > $date) | "\(.path):\(.line // "") — \(.body // "")" | select(length > 0)] | join("\n---\n")' 2>/dev/null)" || inline_comments=""
 
         echo "[debug]   PR comments: ${pr_comments:-<empty>}" >&2
         echo "[debug]   Review bodies: ${review_bodies:-<empty>}" >&2
