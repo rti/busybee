@@ -132,11 +132,35 @@ review_prs() {
             local pr_body
             pr_body="$(gh pr view "$pr_num" --repo "$REPO" --json body --jq '.body')" || pr_body=""
 
+            # Extract linked issue number(s) from the PR body (e.g. "Closes #42", "Fixes #7", "#123").
+            local linked_issue_num="" linked_issue_title="" linked_issue_body="" linked_issue_comments=""
+            linked_issue_num="$(echo "$pr_body" | grep -oE '#[0-9]+' | head -1 | tr -d '#' || true)"
+            if [ -n "$linked_issue_num" ]; then
+                linked_issue_title="$(gh issue view "$linked_issue_num" --repo "$REPO" --json title --jq '.title' 2>/dev/null)" || linked_issue_title=""
+                linked_issue_body="$(gh issue view "$linked_issue_num" --repo "$REPO" --json body --jq '.body' 2>/dev/null)" || linked_issue_body=""
+                linked_issue_comments="$(gh api repos/"$REPO"/issues/"$linked_issue_num"/comments | jq -r '
+                    [.[] | "---\n**\(.user.login)** (\(.created_at[:10]))\n\(.body // "")"] | join("\n\n")
+                ' 2>/dev/null)" || linked_issue_comments=""
+            fi
+
             local prompt="You are working on PR #${pr_num} titled \"${pr_title}\".
 Original PR description:
 ${pr_body}
+"
 
-Address the following review comments on this PR:
+            if [ -n "$linked_issue_num" ]; then
+                prompt+="Linked issue #${linked_issue_num} \"${linked_issue_title}\":
+
+Issue body:
+${linked_issue_body}
+
+Issue comment history:
+${linked_issue_comments}
+
+"
+            fi
+
+            prompt+="Address the following review comments on this PR:
 ${feedback}
 
 Read the relevant files from disk. Implement fixes for each comment. Commit when done.
