@@ -8,7 +8,7 @@ set -euo pipefail
 
 # --- Git identity -----------------------------------------------------------
 git config user.name "busybee-bot"
-git config user.email "bot@busybee.dev"
+git config user.email "busybee-bot@users.noreply.github.com"
 
 # --- Required environment ---------------------------------------------------
 : "${GH_TOKEN:?Environment variable GH_TOKEN is required}"
@@ -84,36 +84,65 @@ review_prs() {
 
         echo "[debug] Checking PR #${pr_num} (branch: ${branch_name}) for feedback..." >&2
 
-        # Fetch review comments that arrived after the bot's last push on this branch.
-        local last_push_date
-        last_push_date="$(git log --format=%aI -1 "origin/${branch_name}" 2>/dev/null)" || last_push_date=""
+        # Determine the baseline timestamp for detecting new feedback on this PR.
+        # We must consider not just pushes but also comments and reviews, since a PR
+        # can be updated by reviewers without any new pushes. Using the branch's last
+        # push alone is insufficient: another user's push could mask reviewer feedback
+        # that arrived between the bot's last run and that user's push.
+        local bot_last_push latest_comment_time latest_review_time
+        bot_last_push="$(git log --format=%aI --author="busybee-bot" -1 "origin/${branch_name}" 2>/dev/null)" || bot_last_push=""
+        latest_comment_time="$(gh pr view "$pr_num" --repo "$REPO" --json comments --jq '[.comments[].updatedAt] | max // empty' 2>/dev/null)" || latest_comment_time=""
+        latest_review_time="$(gh pr view "$pr_num" --repo "$REPO" --json reviews --jq '[.reviews[].submittedAt] | max // empty' 2>/dev/null)" || latest_review_time=""
 
-        local comments=""
-        if [ -n "$last_push_date" ]; then
-            echo "[debug]   Last bot push on branch: ${last_push_date}; fetching comments after that date" >&2
-            comments="$(gh pr view "$pr_num" --repo "$REPO" --json comments --jq --arg date "$last_push_date" '.comments[] | select(.updatedAt > $date) | "\(.body)\n---\n"' 2>/dev/null)" || comments=""
-        else
-            echo "[debug]   No prior bot push on branch; fetching all comments" >&2
-            comments="$(gh pr view "$pr_num" --repo "$REPO" --json comments --jq '.comments[].body' 2>/dev/null)" || comments=""
+        # Use the bot's own last push as baseline for filtering feedback.
+        # Also check comment/review timing to detect if the PR was updated since we last checked.
+        local has_new_activity=false
+        if [ -n "$bot_last_push" ]; then
+            if [ -n "$latest_comment_time" ] && [[ "$latest_comment_time" > "$bot_last_push" ]]; then
+                has_new_activity=true
+            fi
+            if [ -n "$latest_review_time" ] && [[ "$latest_review_time" > "$bot_last_push" ]]; then
+                has_new_activity=true
+            fi
         fi
 
-        # Also check review threads.
-        local threads=""
-        if [ -n "$last_push_date" ]; then
-            threads="$(gh pr view "$pr_num" --repo "$REPO" --json reviewThreads --jq --arg date "$last_push_date" '[.reviewThreads[]?.comments[]? | select(.updatedAt > $date) | .body] | join("\n---\n")' 2>/dev/null)" || threads=""
-        else
-            threads="$(gh pr view "$pr_num" --repo "$REPO" --json reviewThreads --jq '[.reviewThreads[]?.comments[]?.body // ""] | join("\n---\n")' 2>/dev/null)" || threads=""
+        echo "[debug]   Bot last push: ${bot_last_push:-none}; latest comment: ${latest_comment_time:-none}; latest review: ${latest_review_time:-none}; new activity: $has_new_activity" >&2
+
+        # Skip PRs the bot didn't create (no bot commits on the branch).
+        if [ -z "$bot_last_push" ]; then
+            echo "[debug]   No bot commits on this branch — skipping (not our PR)" >&2
+            continue
         fi
 
-        # Check for reviews with state CHANGES_REQUESTED after last push.
-        local review_feedback=""
-        if [ -n "$last_push_date" ]; then
-            review_feedback="$(gh pr view "$pr_num" --repo "$REPO" --json reviews --jq --arg date "$last_push_date" '[.reviews[] | select(.updatedAt > $date and .state == "CHANGES_REQUESTED") | (.body // "" ) + if (.body // "" ) == "" then "\nReviewer requested changes." else "" end] | join("\n---\n")' 2>/dev/null)" || review_feedback=""
-        else
-            review_feedback="$(gh pr view "$pr_num" --repo "$REPO" --json reviews --jq '[.reviews[] | select(.state == "CHANGES_REQUESTED") | (.body // "") + if (.body // "") == "" then "\nReviewer requested changes." else "" end] | join("\n---\n")' 2>/dev/null)" || review_feedback=""
+        # Skip PRs with no new activity since the bot's last push.
+        if [ "$has_new_activity" = false ]; then
+            echo "[debug]   No new activity on PR #${pr_num} — skipping" >&2
+            continue
         fi
 
-        local feedback="${comments}${threads}${review_feedback}"
+        # Fetch all feedback from three sources since the bot's last push.
+        local pr_comments="" review_bodies="" inline_comments=""
+
+        # /issues/{n}/comments — general PR discussion comments.
+        pr_comments="$(gh api repos/"$REPO"/issues/"$pr_num"/comments | jq --arg date "$bot_last_push" \
+            '[.[] | select(.created_at > $date) | .body // "" | select(length > 0)] | join("\n---\n")' 2>/dev/null)" || pr_comments=""
+
+        # /pulls/{n}/reviews — review summary bodies (any state: APPROVED, COMMENTED, CHANGES_REQUESTED).
+        review_bodies="$(gh api repos/"$REPO"/pulls/"$pr_num"/reviews | jq --arg date "$bot_last_push" \
+            '[.[] | select(.submitted_at > $date) | .body // "" | select(length > 0)] | join("\n---\n")' 2>/dev/null)" || review_bodies=""
+
+        # /pulls/{n}/comments — inline file-level review comments.
+        inline_comments="$(gh api repos/"$REPO"/pulls/"$pr_num"/comments | jq --arg date "$bot_last_push" \
+            '[.[] | select(.created_at > $date) | .body // "" | select(length > 0)] | join("\n---\n")' 2>/dev/null)" || inline_comments=""
+
+        echo "[debug]   PR comments: ${pr_comments:-<empty>}" >&2
+        echo "[debug]   Review bodies: ${review_bodies:-<empty>}" >&2
+        echo "[debug]   Inline comments: ${inline_comments:-<empty>}" >&2
+
+        local feedback=""
+        [ -n "$pr_comments" ] && feedback+="$pr_comments"$'\n---\n'
+        [ -n "$review_bodies" ] && feedback+="$review_bodies"$'\n---\n'
+        [ -n "$inline_comments" ] && feedback+="$inline_comments"$'\n---\n'
         # Trim whitespace.
         feedback="$(printf '%s' "$feedback" | sed '/^$/d')"
 
