@@ -136,6 +136,9 @@ review_prs() {
                 git checkout -b "$branch_name" "origin/${branch_name}"
             fi
 
+            echo "[debug]   Updating submodules" >&2
+            git submodule update --init --recursive
+
             local pr_body
             pr_body="$(gh pr view "$pr_num" --repo "$REPO" --json body --jq '.body')" || pr_body=""
 
@@ -202,6 +205,7 @@ If anything is ambiguous, print your questions to stdout prefixed with \`QUESTIO
                 fi
 
                 echo "[debug]   Committing uncommitted changes for PR #${pr_num}" >&2
+                hugo || error_exit "hugo build failed on PR #${pr_num}" "$(git status)"
                 git add -A
                 git commit -m "bot: address review feedback on PR #${pr_num}"
             else
@@ -209,6 +213,11 @@ If anything is ambiguous, print your questions to stdout prefixed with \`QUESTIO
                 while IFS= read -r line; do echo "    [debug]     $line"; done <<< "$new_commits" >&2
                 echo "opencode already committed changes for PR #${pr_num}."
             fi
+
+            echo "[debug]   Building Hugo site" >&2
+            hugo || error_exit "hugo build failed on PR #${pr_num}" "$(git status)"
+            git add -A
+            git commit --amend --no-edit || true
 
             echo "[debug]   Pushing to branch ${branch_name}" >&2
             git push origin "HEAD:${branch_name}" || {
@@ -287,6 +296,7 @@ implement_issue() {
     git fetch origin
     git checkout "$DEFAULT_BRANCH"
     git pull origin "$DEFAULT_BRANCH"
+    git submodule update --init --recursive
 
     # Clean up branch from a previous interrupted run.
     if git show-ref --verify --quiet "refs/heads/${branch_name}"; then
@@ -299,6 +309,7 @@ implement_issue() {
     fi
 
     git checkout -b "$branch_name"
+    git submodule update --init --recursive
 
     # Fetch full issue comment history.
     local issue_comments
@@ -347,6 +358,7 @@ If anything is ambiguous, print your questions to stdout prefixed with \`QUESTIO
         fi
 
         echo "[debug]   Committing uncommitted changes for issue #${issue_num}" >&2
+        hugo || error_exit "hugo build failed on issue #${issue_num}" "$(git status)"
         git add -A
         git commit -m "bot: implement #${issue_num} — ${issue_title}"
     else
@@ -354,6 +366,11 @@ If anything is ambiguous, print your questions to stdout prefixed with \`QUESTIO
         while IFS= read -r line; do echo "    [debug]     $line"; done <<< "$new_commits" >&2
         echo "opencode already committed changes for issue #${issue_num}."
     fi
+
+    echo "[debug]   Building Hugo site" >&2
+    hugo || error_exit "hugo build failed on issue #${issue_num}" "$(git status)"
+    git add -A
+    git commit --amend --no-edit || true
 
     echo "[debug]   Pushing branch ${branch_name} to origin" >&2
     git push origin "$branch_name" || {
