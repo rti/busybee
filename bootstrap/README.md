@@ -5,7 +5,7 @@ This folder contains the bootstrapping process and initial fixup notes for busyb
 ## Prompt Files
 
 - `bootstrap-prompt.md` - Initial prompt to generate dev-loop.sh
-- `dev-loop-prompt.md` - Detailed prompt for building out dev-loop.sh (also in repo root)
+- `dev-loop-prompt.md` - Detailed prompt for building out dev-loop.sh
 
 ## Session Dumps
 
