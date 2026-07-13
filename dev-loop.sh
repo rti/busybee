@@ -269,10 +269,19 @@ implement_issue() {
 
     git checkout -b "$branch_name"
 
+    # Fetch full issue comment history.
+    local issue_comments
+    issue_comments="$(gh api repos/"$REPO"/issues/"$issue_num"/comments | jq -r '
+        [.[] | "---\n**\(.user.login)** (\(.created_at[:10]))\n\(.body // "")"] | join("\n\n")
+    ' 2>/dev/null)" || issue_comments=""
+
     local prompt="You are implementing GitHub issue #${issue_num} titled \"${issue_title}\".
 
 Issue body:
 ${issue_body}
+
+Issue comment history:
+${issue_comments}
 
 The repository is checked out on disk at the current working directory.
 Read the relevant files yourself. Implement this change. Commit when done.
