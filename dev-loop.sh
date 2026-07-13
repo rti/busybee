@@ -79,44 +79,19 @@ review_prs() {
     local pr_sorted
     pr_sorted="$(echo "$pr_list" | sort -t'|' -k2 -r)"
 
+    git fetch origin
+
     while IFS='|' read -r pr_num updated_at pr_title branch_name; do
         [ -z "$pr_num" ] && continue
 
         echo "[debug] Checking PR #${pr_num} (branch: ${branch_name}) for feedback..." >&2
 
-        # Determine the baseline timestamp for detecting new feedback on this PR.
-        # We must consider not just pushes but also comments and reviews, since a PR
-        # can be updated by reviewers without any new pushes. Using the branch's last
-        # push alone is insufficient: another user's push could mask reviewer feedback
-        # that arrived between the bot's last run and that user's push.
-        local bot_last_push latest_comment_time latest_review_time
+        local bot_last_push
         bot_last_push="$(git log --format=%aI --author="busybee-bot" -1 "origin/${branch_name}" 2>/dev/null)" || bot_last_push=""
-        latest_comment_time="$(gh pr view "$pr_num" --repo "$REPO" --json comments --jq '[.comments[].updatedAt] | max // empty' 2>/dev/null)" || latest_comment_time=""
-        latest_review_time="$(gh pr view "$pr_num" --repo "$REPO" --json reviews --jq '[.reviews[].submittedAt] | max // empty' 2>/dev/null)" || latest_review_time=""
-
-        # Use the bot's own last push as baseline for filtering feedback.
-        # Also check comment/review timing to detect if the PR was updated since we last checked.
-        local has_new_activity=false
-        if [ -n "$bot_last_push" ]; then
-            if [ -n "$latest_comment_time" ] && [[ "$latest_comment_time" > "$bot_last_push" ]]; then
-                has_new_activity=true
-            fi
-            if [ -n "$latest_review_time" ] && [[ "$latest_review_time" > "$bot_last_push" ]]; then
-                has_new_activity=true
-            fi
-        fi
-
-        echo "[debug]   Bot last push: ${bot_last_push:-none}; latest comment: ${latest_comment_time:-none}; latest review: ${latest_review_time:-none}; new activity: $has_new_activity" >&2
 
         # Skip PRs the bot didn't create (no bot commits on the branch).
         if [ -z "$bot_last_push" ]; then
             echo "[debug]   No bot commits on this branch — skipping (not our PR)" >&2
-            continue
-        fi
-
-        # Skip PRs with no new activity since the bot's last push.
-        if [ "$has_new_activity" = false ]; then
-            echo "[debug]   No new activity on PR #${pr_num} — skipping" >&2
             continue
         fi
 
