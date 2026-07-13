@@ -20,6 +20,7 @@
             gh
             jq
             opencode
+            hugo
           ];
           text = builtins.readFile ./dev-loop.sh;
         };
