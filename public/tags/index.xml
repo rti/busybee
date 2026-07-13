@@ -2,7 +2,7 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
 	<channel>
 		<title>Tags on busybee</title>
-		<link>https://example.org/tags/</link>
+		<link>https://rti.github.io/busybee/tags/</link>
 		<description>Recent content in Tags on busybee</description>
 		<generator>Hugo</generator>
 		<language>en-us</language>
@@ -10,6 +10,6 @@
 		
 		
 		
-			<atom:link href="https://example.org/tags/index.xml" rel="self" type="application/rss+xml" />
+			<atom:link href="https://rti.github.io/busybee/tags/index.xml" rel="self" type="application/rss+xml" />
 	</channel>
 </rss>
