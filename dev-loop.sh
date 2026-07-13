@@ -126,8 +126,15 @@ review_prs() {
             echo "Addressing feedback on PR #${pr_num}..."
 
             git fetch origin
-            git checkout "origin/${branch_name}"
-            git checkout -b "bot-fix-${pr_num}"
+
+            # Clean up local branch from a previous interrupted run.
+            if git show-ref --verify --quiet "refs/heads/${branch_name}"; then
+                echo "[debug]   Resetting local branch ${branch_name} to origin" >&2
+                git checkout "$branch_name"
+                git reset --hard "origin/${branch_name}"
+            else
+                git checkout -b "$branch_name" "origin/${branch_name}"
+            fi
 
             local pr_body
             pr_body="$(gh pr view "$pr_num" --repo "$REPO" --json body --jq '.body')" || pr_body=""
