@@ -370,7 +370,8 @@ ${issue_comments}
 
 The repository is checked out on disk at the current working directory.
 Read the relevant files yourself. Implement this change. Commit when done.
-If anything is ambiguous, print your questions to stdout prefixed with \`QUESTION:\` so the wrapper script can post them."
+If anything is ambiguous, print your questions to stdout prefixed with \`QUESTION:\` so the wrapper script can post them.
+Otherwise just keep going to run without further user input."
 
     local result
     result="$(run_opencode "$prompt")" || error_exit "opencode failed on issue #${issue_num}" "$result"
