@@ -1,6 +1,6 @@
 ---
 name: hugo
-description: Hugo static site generator reference. Use when working with Hugo sites, configuring Hugo, writing templates, using Hugo functions/methods, or building static websites with Hugo. Covers configuration, content management, templates, functions, deployment, and more.
+description: Hugo static site generator reference. Use when working with Hugo sites, configuring Hugo, writing templates, using Hugo functions/methods, or building static websites with Hugo. Covers configuration, content management, templates, functions, and more.
 license: MIT
 source: https://github.com/gohugoio/hugo/tree/master/docs
 metadata:
@@ -11,146 +11,139 @@ metadata:
 
 # Hugo Static Site Generator
 
-Hugo is the world's fastest framework for building websites. It is a static site generator written in Go, known for its speed and flexibility.
+Hugo is the world's fastest framework for building static websites. Written in Go, it combines speed with flexibility.
 
 ## Overview
 
-This skill provides comprehensive reference material from the official Hugo documentation. The SKILL.md file serves as an index — load specific reference files for detailed information on individual topics.
+This skill provides reference material from the official Hugo documentation. Each topic links to an index file that lists available sub-sections. Load specific reference files for detailed information.
 
 ## Topic Index
 
-### `content-management` — Content Management
+### `about` — About
+- [`index`](references/about/index.md) — Overview
 
+### `commands` — Commands
+- [`index`](references/commands/index.md) — Overview
+
+### `configuration` — Configuration
+- [`index`](references/configuration/index.md) — Overview
+
+### `content-management` — Content Management
+- [`index`](references/content-management/index.md) — Overview
 - [`image-processing`](references/content-management/image-processing.md) — Image Processing
 - [`organization`](references/content-management/organization.md) — Organization
 
-### `contribute` — Contribute
+### `contribute/documentation` — Documentation
+- [`index`](references/contribute/documentation/index.md) — Overview
 
-- [`documentation`](references/contribute/documentation.md) — Documentation
+### `functions/collections` — Collections
+- [`index`](references/functions/collections/index.md) — Overview
 
-### `functions` — Functions
+### `functions/css` — Css
+- [`index`](references/functions/css/index.md) — Overview
 
-- [`cast`](references/functions/cast.md) — Cast
-- [`collections`](references/functions/collections.md) — Collections
-- [`compare`](references/functions/compare.md) — Compare
-- [`crypto`](references/functions/crypto.md) — Crypto
-- [`css`](references/functions/css.md) — Css
-- [`debug`](references/functions/debug.md) — Debug
-- [`diagrams`](references/functions/diagrams.md) — Diagrams
-- [`encoding`](references/functions/encoding.md) — Encoding
-- [`fmt`](references/functions/fmt.md) — Fmt
-- [`global`](references/functions/global.md) — Global
-- [`go-template`](references/functions/go-template.md) — Go Template
-- [`hash`](references/functions/hash.md) — Hash
-- [`hugo`](references/functions/hugo.md) — Hugo
-- [`images`](references/functions/images.md) — Images
-- [`inflect`](references/functions/inflect.md) — Inflect
-- [`js`](references/functions/js.md) — Js
-- [`lang`](references/functions/lang.md) — Lang
-- [`math`](references/functions/math.md) — Math
-- [`openapi3`](references/functions/openapi3.md) — Openapi3
-- [`os`](references/functions/os.md) — Os
-- [`partials`](references/functions/partials.md) — Partials
-- [`path`](references/functions/path.md) — Path
-- [`reflect`](references/functions/reflect.md) — Reflect
-- [`resources`](references/functions/resources.md) — Resources
-- [`safe`](references/functions/safe.md) — Safe
-- [`strings`](references/functions/strings.md) — Strings
-- [`templates`](references/functions/templates.md) — Templates
-- [`time`](references/functions/time.md) — Time
-- [`transform`](references/functions/transform.md) — Transform
-- [`urls`](references/functions/urls.md) — Urls
+### `functions/go-template` — Go Template
+- [`index`](references/functions/go-template/index.md) — Overview
+
+### `functions/hugo` — Hugo
+- [`index`](references/functions/hugo/index.md) — Overview
+
+### `functions/images` — Images
+- [`index`](references/functions/images/index.md) — Overview
+
+### `functions/js` — Js
+- [`index`](references/functions/js/index.md) — Overview
+
+### `functions/lang` — Lang
+- [`index`](references/functions/lang/index.md) — Overview
+
+### `functions/resources` — Resources
+- [`index`](references/functions/resources/index.md) — Overview
+
+### `functions/safe` — Safe
+- [`index`](references/functions/safe/index.md) — Overview
+
+### `functions/strings` — Strings
+- [`index`](references/functions/strings/index.md) — Overview
+
+### `functions/templates` — Templates
+- [`index`](references/functions/templates/index.md) — Overview
+
+### `functions/time` — Time
+- [`index`](references/functions/time/index.md) — Overview
+
+### `functions/transform` — Transform
+- [`index`](references/functions/transform/index.md) — Overview
+
+### `functions/urls` — Urls
+- [`index`](references/functions/urls/index.md) — Overview
 
 ### `getting-started` — Getting Started
+- [`index`](references/getting-started/index.md) — Overview
 
-- [`external-learning-resources`](references/getting-started/external-learning-resources.md) — External Learning Resources
+### `hugo-modules` — Hugo Modules
+- [`index`](references/hugo-modules/index.md) — Overview
 
-### `host-and-deploy` — Host And Deploy
+### `methods/menu-entry` — Menu Entry
+- [`index`](references/methods/menu-entry/index.md) — Overview
 
-- [`host-on-aws-amplify`](references/host-and-deploy/host-on-aws-amplify.md) — Host On Aws Amplify
-- [`host-on-cloudflare`](references/host-and-deploy/host-on-cloudflare.md) — Host On Cloudflare
-- [`host-on-github-pages`](references/host-and-deploy/host-on-github-pages.md) — Host On Github Pages
-- [`host-on-netlify`](references/host-and-deploy/host-on-netlify.md) — Host On Netlify
-- [`host-on-render`](references/host-and-deploy/host-on-render.md) — Host On Render
-- [`host-on-vercel`](references/host-and-deploy/host-on-vercel.md) — Host On Vercel
+### `methods/page` — Page
+- [`index`](references/methods/page/index.md) — Overview
 
-### `methods` — Methods
+### `methods/pages` — Pages
+- [`index`](references/methods/pages/index.md) — Overview
 
-- [`duration`](references/methods/duration.md) — Duration
-- [`menu-entry`](references/methods/menu-entry.md) — Menu Entry
-- [`menu`](references/methods/menu.md) — Menu
-- [`output-format`](references/methods/output-format.md) — Output Format
-- [`page`](references/methods/page.md) — Page
-- [`pager`](references/methods/pager.md) — Pager
-- [`pages`](references/methods/pages.md) — Pages
-- [`resource`](references/methods/resource.md) — Resource
-- [`shortcode`](references/methods/shortcode.md) — Shortcode
-- [`site`](references/methods/site.md) — Site
-- [`taxonomy`](references/methods/taxonomy.md) — Taxonomy
-- [`time`](references/methods/time.md) — Time
+### `methods/resource` — Resource
+- [`index`](references/methods/resource/index.md) — Overview
+
+### `methods/shortcode` — Shortcode
+- [`index`](references/methods/shortcode/index.md) — Overview
+
+### `methods/site` — Site
+- [`index`](references/methods/site/index.md) — Overview
+
+### `methods/taxonomy` — Taxonomy
+- [`index`](references/methods/taxonomy/index.md) — Overview
+
+### `methods/time` — Time
+- [`index`](references/methods/time/index.md) — Overview
 
 ### `quick-reference` — Quick Reference
+- [`index`](references/quick-reference/index.md) — Overview
 
-- [`glossary`](references/quick-reference/glossary.md) — Glossary
+### `render-hooks` — Render Hooks
+- [`index`](references/render-hooks/index.md) — Overview
+
+### `shortcodes` — Shortcodes
+- [`index`](references/shortcodes/index.md) — Overview
+
+### `templates` — Templates
+- [`index`](references/templates/index.md) — Overview
+
+### `tools` — Tools
+- [`index`](references/tools/index.md) — Overview
 
 ### `troubleshooting` — Troubleshooting
+- [`index`](references/troubleshooting/index.md) — Overview
 
-- [`audit`](references/troubleshooting/audit.md) — Audit
-
-- [`about`](references/about.md) — About
-- [`commands`](references/commands.md) — Commands
-- [`configuration`](references/configuration.md) — Configuration
-- [`content-management`](references/content-management.md) — Content Management
-- [`contribute`](references/contribute.md) — Contribute
-- [`getting-started`](references/getting-started.md) — Getting Started
-- [`host-and-deploy`](references/host-and-deploy.md) — Host And Deploy
-- [`hugo-modules`](references/hugo-modules.md) — Hugo Modules
+### `hugo-pipes` — Hugo Pipes
 - [`hugo-pipes`](references/hugo-pipes.md) — Hugo Pipes
-- [`installation`](references/installation.md) — Installation
-- [`quick-reference`](references/quick-reference.md) — Quick Reference
-- [`render-hooks`](references/render-hooks.md) — Render Hooks
-- [`shortcodes`](references/shortcodes.md) — Shortcodes
-- [`templates`](references/templates.md) — Templates
-- [`tools`](references/tools.md) — Tools
-- [`troubleshooting`](references/troubleshooting.md) — Troubleshooting
 
 
-## Usage with Hugo Sites
 
-### Common Commands
+## Common Commands
 
 ```bash
 hugo new site <name>       # Create a new site
-hugo new <section>/<name>  # Create a new content page
+hugo new <section>/<name>  # Create new content
 hugo                      # Build the site
-hugo server               # Run development server
-hugo server -D            # Include draft content
-hugo --minify             # Build with minification
+hugo server               # Development server
+hugo server -D            # Include drafts
+hugo --minify             # Minified build
 ```
 
-### Typical Project Structure
+## Working with This Skill
 
-```
-my-site/
-├── archetypes/       # Default front matter templates
-├── assets/           # Source assets (SCSS, JS, images)
-├── content/          # Markdown content files
-├── data/             # Data files (JSON, YAML, TOML)
-├── layouts/          # HTML templates
-├── static/           # Static files (copied as-is)
-├── themes/           # Hugo themes
-├── config.toml       # Site configuration
-└── go.mod            # Hugo modules (optional)
-```
-
-### Working with This Skill
-
-1. **Quick lookup**: Read SKILL.md to find the relevant topic area
-2. **Deep dive**: Load the corresponding `references/<topic>.md` or `references/<topic>/<subtopic>.md` file
-3. **Functions reference**: The `functions/` and `methods/` references are organized by package (e.g., strings, collections, urls)
-
-## Best Practices
-
-- Keep SKILL.md under 500 lines for fast loading
-- Reference files contain the actual Hugo docs content — load only what you need
-- Function and method references are split by package to keep files small
+1. **Quick lookup**: Read SKILL.md to find the relevant topic
+2. **Deep dive**: Load the `references/<topic>/index.md` for sub-sections, then individual section files
+3. **Functions/methods**: Organized by package (e.g., strings, collections, urls)

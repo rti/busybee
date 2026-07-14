@@ -1,0 +1,108 @@
+# configuration
+
+
+---
+source: https://github.com/gohugoio/hugo/blob/master/docs/content/en/configuration/all.md
+---
+
+
+
+## Sections
+
+- [`settings`](references/configuration/settings.md) — Settings
+- [`cache-directory`](references/configuration/cache-directory.md) — Cache Directory
+- [`title-case-style`](references/configuration/title-case-style.md) — Title Case Style
+- [`localized-settings`](references/configuration/localized-settings.md) — Localized Settings
+- [`cache-busters`](references/configuration/cache-busters.md) — Cache Busters
+- [`build-stats`](references/configuration/build-stats.md) — Build Stats
+- [`purpose`](references/configuration/purpose.md) — Purpose
+- [`keys`](references/configuration/keys.md) — Keys
+- [`tokens`](references/configuration/tokens.md) — Tokens
+- [`garbage-collection`](references/configuration/garbage-collection.md) — Garbage Collection
+- [`target`](references/configuration/target.md) — Target
+- [`array`](references/configuration/array.md) — Array
+- [`toplevel-settings`](references/configuration/toplevel-settings.md) — Top-level Settings
+- [`targets`](references/configuration/targets.md) — Targets
+- [`matchers`](references/configuration/matchers.md) — Matchers
+- [`destination-urls`](references/configuration/destination-urls.md) — Destination URLs
+- [`example`](references/configuration/example.md) — Example
+- [`dates`](references/configuration/dates.md) — Dates
+- [`aliases`](references/configuration/aliases.md) — Aliases
+- [`tokens`](references/configuration/tokens.md) — Tokens
+- [`example`](references/configuration/example.md) — Example
+- [`layered-caching`](references/configuration/layered-caching.md) — Layered Caching
+- [`http-caching`](references/configuration/http-caching.md) — HTTP Caching
+- [`http-polling`](references/configuration/http-polling.md) — HTTP Polling
+- [`behavior`](references/configuration/behavior.md) — Behavior
+- [`toplevel-settings`](references/configuration/toplevel-settings.md) — Top-level Settings
+- [`avif`](references/configuration/avif.md) — AVIF
+- [`jpeg`](references/configuration/jpeg.md) — JPEG
+- [`webp`](references/configuration/webp.md) — WebP
+- [`exif-method`](references/configuration/exif-method.md) — Exif Method
+- [`meta-method`](references/configuration/meta-method.md) — Meta Method
+- [`sensible-defaults`](references/configuration/sensible-defaults.md) — Sensible Defaults
+- [`configuration-file`](references/configuration/configuration-file.md) — Configuration File
+- [`configuration-directory`](references/configuration/configuration-directory.md) — Configuration Directory
+- [`merge-configuration-settings`](references/configuration/merge-configuration-settings.md) — Merge Configuration Settings
+- [`environment-variables`](references/configuration/environment-variables.md) — Environment Variables
+- [`current-configuration`](references/configuration/current-configuration.md) — Current Configuration
+- [`base-settings`](references/configuration/base-settings.md) — Base Settings
+- [`language-settings`](references/configuration/language-settings.md) — Language Settings
+- [`sort-order`](references/configuration/sort-order.md) — Sort Order
+- [`localized-settings`](references/configuration/localized-settings.md) — Localized Settings
+- [`language-keys`](references/configuration/language-keys.md) — Language Keys
+- [`example`](references/configuration/example.md) — Example
+- [`multihost`](references/configuration/multihost.md) — Multihost
+- [`default-handler`](references/configuration/default-handler.md) — Default Handler
+- [`goldmark`](references/configuration/goldmark.md) — Goldmark
+- [`asciidoc`](references/configuration/asciidoc.md) — AsciiDoc
+- [`highlight`](references/configuration/highlight.md) — Highlight
+- [`table-of-contents`](references/configuration/table-of-contents.md) — Table Of Contents
+- [`default-configuration`](references/configuration/default-configuration.md) — Default Configuration
+- [`modify-a-media-type`](references/configuration/modify-a-media-type.md) — Modify A Media Type
+- [`create-a-media-type`](references/configuration/create-a-media-type.md) — Create A Media Type
+- [`media-types-without-suffixes`](references/configuration/media-types-without-suffixes.md) — Media Types Without Suffixes
+- [`example`](references/configuration/example.md) — Example
+- [`properties`](references/configuration/properties.md) — Properties
+- [`nested-menu`](references/configuration/nested-menu.md) — Nested Menu
+- [`toplevel-settings`](references/configuration/toplevel-settings.md) — Top-level Settings
+- [`hugo-version`](references/configuration/hugo-version.md) — Hugo Version
+- [`imports`](references/configuration/imports.md) — Imports
+- [`mounts`](references/configuration/mounts.md) — Mounts
+- [`default-configuration`](references/configuration/default-configuration.md) — Default Configuration
+- [`modify-an-output-format`](references/configuration/modify-an-output-format.md) — Modify An Output Format
+- [`create-an-output-format`](references/configuration/create-an-output-format.md) — Create An Output Format
+- [`list-output-formats`](references/configuration/list-output-formats.md) — List Output Formats
+- [`link-to-output-formats`](references/configuration/link-to-output-formats.md) — Link To Output Formats
+- [`template-lookup-order`](references/configuration/template-lookup-order.md) — Template Lookup Order
+- [`outputs-per-page-kind`](references/configuration/outputs-per-page-kind.md) — Outputs Per Page Kind
+- [`outputs-per-page`](references/configuration/outputs-per-page.md) — Outputs Per Page
+- [`multilingual-projects`](references/configuration/multilingual-projects.md) — Multilingual Projects
+- [`namespacing`](references/configuration/namespacing.md) — Namespacing
+- [`map-form`](references/configuration/map-form.md) — Map Form
+- [`array-form`](references/configuration/array-form.md) — Array Form
+- [`tokens`](references/configuration/tokens.md) — Tokens
+- [`responsibility`](references/configuration/responsibility.md) — Responsibility
+- [`embedded-templates`](references/configuration/embedded-templates.md) — Embedded Templates
+- [`configuration`](references/configuration/configuration.md) — Configuration
+- [`default-configuration`](references/configuration/default-configuration.md) — Default Configuration
+- [`toplevel-settings`](references/configuration/toplevel-settings.md) — Top-level Settings
+- [`perindex-settings`](references/configuration/perindex-settings.md) — Per-index Settings
+- [`example`](references/configuration/example.md) — Example
+- [`settings`](references/configuration/settings.md) — Settings
+- [`sort-order`](references/configuration/sort-order.md) — Sort Order
+- [`example`](references/configuration/example.md) — Example
+- [`negation-rules`](references/configuration/negation-rules.md) — Negation Rules
+- [`environment-variables`](references/configuration/environment-variables.md) — Environment Variables
+- [`segment-definition`](references/configuration/segment-definition.md) — Segment Definition
+- [`fields`](references/configuration/fields.md) — Fields
+- [`targeting-segments`](references/configuration/targeting-segments.md) — Targeting Segments
+- [`example`](references/configuration/example.md) — Example
+- [`default-settings`](references/configuration/default-settings.md) — Default Settings
+- [`headers`](references/configuration/headers.md) — Headers
+- [`redirects`](references/configuration/redirects.md) — Redirects
+- [`404-errors`](references/configuration/404-errors.md) — 404 Errors
+- [`settings`](references/configuration/settings.md) — Settings
+- [`sort-order`](references/configuration/sort-order.md) — Sort Order
+- [`example`](references/configuration/example.md) — Example
+
