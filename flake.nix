@@ -11,13 +11,17 @@
       pkgs = import nixpkgs { inherit system; };
       commonDeps = with pkgs; [
         bash
-        git
+        bash-language-server
         gh
-        jq
-        opencode
+        git
         hugo
+        jq
+        marksman
+        opencode
         playwright-mcp
         shellcheck
+        vscode-langservers-extracted
+        yaml-language-server
       ];
     in
     {

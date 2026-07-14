@@ -6,5 +6,31 @@
       "command": ["playwright-mcp", "--viewport-size=1280x720"],
       "enabled": true
     }
+  },
+  "lsp": {
+    "bash": {
+      "command": ["bash-language-server", "start"],
+      "extensions": [".sh", ".bash"]
+    },
+    "marksman": {
+      "command": ["marksman", "server"],
+      "extensions": [".md", ".markdown"]
+    },
+    "vscode-css-language-server": {
+      "command": ["vscode-css-language-server", "--stdio"],
+      "extensions": [".css"]
+    },
+    "vscode-html-language-server": {
+      "command": ["vscode-html-language-server", "--stdio"],
+      "extensions": [".html"]
+    },
+    "vscode-json-language-server": {
+      "command": ["vscode-json-language-server", "--stdio"],
+      "extensions": [".json", ".jsonc"]
+    },
+    "yaml": {
+      "command": ["yaml-language-server", "--stdio"],
+      "extensions": [".yaml", ".yml"]
+    }
   }
 }
