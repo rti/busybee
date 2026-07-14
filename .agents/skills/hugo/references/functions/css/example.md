@@ -1,0 +1,24 @@
+## Example
+
+```go-html-template {copy=true}
+{{ with resources.Get "sass/main.scss" }}
+  {{ $opts := dict
+    "enableSourceMap" hugo.IsDevelopment
+    "outputStyle" (cond hugo.IsDevelopment "expanded" "compressed")
+    "targetPath" "css/main.css"
+    "transpiler" "dartsass"
+    "vars" site.Params.styles
+    "includePaths" (slice "node_modules/bootstrap/scss")
+  }}
+  {{ with . | css.Sass $opts }}
+    {{ if hugo.IsDevelopment }}
+      <link rel="stylesheet" href="{{ .RelPermalink }}">
+    {{ else }}
+      {{ with . | fingerprint }}
+        <link rel="stylesheet" href="{{ .RelPermalink }}" integrity="{{ .Data.Integrity }}" crossorigin="anonymous">
+      {{ end }}
+    {{ end }}
+  {{ end }}
+{{ end }}
+```
+

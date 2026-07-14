@@ -1,0 +1,4 @@
+## Configuration
+
+See [configure taxonomies][].
+

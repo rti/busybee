@@ -1,0 +1,22 @@
+## Outputs per page kind
+
+The following default configuration determines the output formats generated for each page kind:
+
+{{< code-toggle config=outputs />}}
+
+To render the built-in `json` output format for the `home` page kind, assuming you've already created the necessary template, add the following to your configuration:
+
+{{< code-toggle file=hugo >}}
+[outputs]
+home = ['html','rss','json']
+{{< /code-toggle >}}
+
+Notice in this example that we only specified the `home` page kind. You don't need to include entries for other page kinds unless you intend to modify their default output formats.
+
+> [!NOTE]
+> The order of the output formats in the arrays above is important. The first element will be the _primary output format_ for that page kind, and in most cases that should be `html` as shown in the default configuration.
+>
+> The primary output format for a given page kind determines the value returned by the [`Permalink`][] and [`RelPermalink`][] methods on a `Page` object.
+>
+> See the [link to output formats][] section for details.
+
