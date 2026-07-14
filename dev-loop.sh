@@ -253,6 +253,7 @@ ${current_diff}"
             local updated_summary
             updated_summary="$(echo "$update_summary_prompt" | opencode run --agent build)" || updated_summary=""
             # Strip markdown code block fencing so GitHub renders the markdown properly.
+            # shellcheck disable=SC2016
             updated_summary="$(printf '%s\n' "$updated_summary" | sed '/^```/,/^```/d')"
 
             local new_pr_body=""
@@ -437,6 +438,7 @@ ${diff_full}"
     local summary
     summary="$(echo "$summary_prompt" | opencode run --agent build)" || summary=""
     # Strip markdown code block fencing so GitHub renders the markdown properly.
+    # shellcheck disable=SC2016
     summary="$(printf '%s\n' "$summary" | sed '/^```/,/^```/d')"
 
     echo "[debug]   Opening PR for issue #${issue_num}" >&2
