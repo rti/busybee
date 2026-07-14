@@ -191,7 +191,7 @@ If anything is ambiguous, print your questions to stdout prefixed with \`QUESTIO
             if [ -n "$questions" ]; then
                 echo "[debug]   Opencode asked for clarification on PR #${pr_num}" >&2
                 echo "Asking for clarification on PR #${pr_num}..."
-                post_questions "pr" "$pr_num" "I need clarification before proceeding:\n\n${questions}"
+                post_questions "pr" "$pr_num" $'I need clarification before proceeding:\n\n'"${questions}"
                 git checkout "$DEFAULT_BRANCH" 2>/dev/null || true
                 return 0
             fi
@@ -338,7 +338,7 @@ If anything is ambiguous, print your questions to stdout prefixed with \`QUESTIO
     if [ -n "$questions" ]; then
         echo "[debug]   Opencode asked for clarification on issue #${issue_num}" >&2
         echo "Asking for clarification on issue #${issue_num}..."
-        post_questions "issue" "$issue_num" "I need clarification before proceeding:\n\n${questions}"
+        post_questions "issue" "$issue_num" $'I need clarification before proceeding:\n\n'"${questions}"
         git checkout "$DEFAULT_BRANCH" 2>/dev/null || true
         return 0
     fi
