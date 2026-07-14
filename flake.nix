@@ -9,19 +9,22 @@
     let
       system = "x86_64-linux";
       pkgs = import nixpkgs { inherit system; };
+      commonDeps = with pkgs; [
+        bash
+        git
+        gh
+        jq
+        opencode
+        hugo
+        playwright-mcp
+        shellcheck
+      ];
     in
     {
       packages.${system} = {
         dev-loop = pkgs.writeShellApplication {
           name = "dev-loop";
-          runtimeInputs = with pkgs; [
-            bash
-            git
-            gh
-            jq
-            opencode
-            hugo
-          ];
+          runtimeInputs = commonDeps;
           text = builtins.readFile ./dev-loop.sh;
         };
 
@@ -29,15 +32,7 @@
       };
 
       devShells.${system}.default = pkgs.mkShell {
-          packages = with pkgs; [
-            bash
-            git
-            gh
-            jq
-            opencode
-            shellcheck
-            hugo
-          ];
+          packages = commonDeps;
       };
     };
 }
