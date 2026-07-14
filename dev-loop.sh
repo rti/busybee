@@ -252,6 +252,8 @@ ${current_diff}"
 
             local updated_summary
             updated_summary="$(echo "$update_summary_prompt" | opencode run --agent build)" || updated_summary=""
+            # Strip markdown code block fencing so GitHub renders the markdown properly.
+            updated_summary="$(printf '%s\n' "$updated_summary" | sed '/^```/,/^```/d')"
 
             local new_pr_body=""
             if [ -n "$linked_issue_num" ]; then
@@ -436,6 +438,8 @@ ${diff_full}"
 
     local summary
     summary="$(echo "$summary_prompt" | opencode run --agent build)" || summary=""
+    # Strip markdown code block fencing so GitHub renders the markdown properly.
+    summary="$(printf '%s\n' "$summary" | sed '/^```/,/^```/d')"
 
     echo "[debug]   Opening PR for issue #${issue_num}" >&2
     # Open a PR.
