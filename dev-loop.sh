@@ -248,7 +248,7 @@ pick_issue() {
         --json number,title,body,labels --jq '
             [.[] | select(
                 (.labels // [] | map(.name) | all(. != "bot" and . != "wontfix"))
-            )] | .[] | "\(.number)|\(.title)|\(.body)"')" || return 1
+            )] | .[] | "\(.number)|\(.title)|\(.body | @base64)"')" || return 1
 
     [ -z "$issues" ] && { echo "[debug] No open issues found (after filtering bot/wontfix)"; return 1; } >&2
 
@@ -439,7 +439,8 @@ issue_data="$(pick_issue)" || {
     exit 0
 }
 
-IFS='|' read -r issue_num issue_title issue_body <<< "$issue_data"
+IFS='|' read -r issue_num issue_title issue_body_b64 <<< "$issue_data"
+issue_body="$(echo "$issue_body_b64" | base64 -d)"
 if implement_issue "$issue_num" "$issue_title" "$issue_body"; then
     echo "[debug] Successfully implemented issue #${issue_num} — exiting" >&2
     exit 0
