@@ -261,8 +261,6 @@ ${current_diff}"
 "
             fi
             new_pr_body+="
-## Summary
-
 ${updated_summary}
 
 ---
